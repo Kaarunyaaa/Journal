@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://kit.fontawesome.com/1cf1ca806e.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <title>Styled Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .form-container {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            resize: vertical;
+            box-sizing: border-box; /* Ensures padding is included in width */
+        }
+
+        input[type="submit"] {
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            background-color: #6c63ff;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #5750ce;
+        }
+
+        #mic{
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            background-color: #6c63ff;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #mic:hover {
+            background-color: #5750ce;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="form-container">
+        <form method="POST">
+            {% csrf_token %}
+            <textarea id="journal-entry" name="notes" rows="25" cols="50" placeholder="Enter your notes here..."></textarea>
+            <br>
+            <input type="submit" value="Submit">
+        </form>
+        <button id="mic"><i class="fa-solid fa-microphone"></i></button>
+    </div>
+
+    <script>
+        const journalEntry = document.getElementById('journal-entry');
+        const mic = document.getElementById('mic');
+        var flag=true;
+        
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRecognition) {
+            const recognition = new SpeechRecognition();
+
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US'; 
+            finalResult=''
+            
+            recognition.onresult = (event) => {
+                let finalTranscript = '';
+                let interimTranscript = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    let transcript = event.results[i][0].transcript;
+                    console.log(event.results[i]);
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript;
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+                if (finalTranscript!=''){
+                    finalResult += finalTranscript+".";
+                }
+                else{
+                    journalEntry.value =interimTranscript;
+                }
+                
+            };
+
+            mic.addEventListener('click',()=>{
+                if(flag){
+                    recognition.start();
+                    flag=false;
+                }
+                else{
+                    recognition.stop();
+                    journalEntry.value=finalResult;
+                    finalResult+=" ";
+                    flag=true;
+                }
+            });
+
+        } else {
+            alert("Your browser doesn't support the Web Speech API");
+        }
+    </script>
+
+</body>
+</html>
